@@ -1,0 +1,15 @@
+[package]
+name = "lua-candle"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+name = "candle"
+crate-type = ["cdylib"]
+
+[features]
+lua54 = ["mlua/lua54"]
+
+[dependencies]
+candle-core = { git = "https://github.com/huggingface/candle.git" }
+mlua = { version = "0.9.0-rc.3", features = ["lua54", "module"] }
