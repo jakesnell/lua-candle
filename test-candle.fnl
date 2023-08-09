@@ -8,4 +8,16 @@
 (local b (candle.Tensor 3))
 (print (+ a b))
 (print (- a b))
-(print (- a b b))
+(print (* a b))
+
+(local c (candle.Tensor 0))
+(print (/ a c))
+
+(local d (candle.rand [3 5]))
+(local e (candle.randn [3 5]))
+(print d)
+(print e)
+(print (+ d e))
+
+(local f (candle.randn [3 3]))
+(print f)

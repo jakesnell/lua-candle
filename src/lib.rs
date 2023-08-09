@@ -28,6 +28,18 @@ impl LuaUserData for LuaTensor {
                 Ok(LuaTensor(Tensor::sub(&lhs.0, &rhs.0).map_err(wrap_err)?))
             },
         );
+        methods.add_meta_function(
+            LuaMetaMethod::Mul,
+            |_, (lhs, rhs): (LuaUserDataRef<Self>, LuaUserDataRef<Self>)| {
+                Ok(LuaTensor(Tensor::mul(&lhs.0, &rhs.0).map_err(wrap_err)?))
+            },
+        );
+        methods.add_meta_function(
+            LuaMetaMethod::Div,
+            |_, (lhs, rhs): (LuaUserDataRef<Self>, LuaUserDataRef<Self>)| {
+                Ok(LuaTensor(Tensor::div(&lhs.0, &rhs.0).map_err(wrap_err)?))
+            },
+        );
     }
 }
 
@@ -41,17 +53,29 @@ fn zeros(_: &Lua, shape: Vec<usize>) -> LuaResult<LuaTensor> {
     Ok(LuaTensor(tensor))
 }
 
+fn rand(_: &Lua, shape: Vec<usize>) -> LuaResult<LuaTensor> {
+    let tensor = Tensor::rand(0., 1., shape, &Device::Cpu).map_err(wrap_err)?;
+    Ok(LuaTensor(tensor))
+}
+
+fn randn(_: &Lua, shape: Vec<usize>) -> LuaResult<LuaTensor> {
+    let tensor = Tensor::randn(0., 1., shape, &Device::Cpu).map_err(wrap_err)?;
+    Ok(LuaTensor(tensor))
+}
+
 #[mlua::lua_module]
 fn candle(lua: &Lua) -> LuaResult<LuaTable> {
     let exports = lua.create_table()?;
-    exports.set("ones", lua.create_function(ones)?)?;
-    exports.set("zeros", lua.create_function(zeros)?)?;
     exports.set(
         "Tensor",
         lua.create_userdata(LuaTensor(
             Tensor::zeros((), DType::F32, &Device::Cpu).map_err(wrap_err)?,
         ))?,
     )?;
+    exports.set("ones", lua.create_function(ones)?)?;
+    exports.set("zeros", lua.create_function(zeros)?)?;
+    exports.set("rand", lua.create_function(rand)?)?;
+    exports.set("randn", lua.create_function(randn)?)?;
 
     Ok(exports)
 }
