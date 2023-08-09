@@ -19,27 +19,39 @@ impl LuaUserData for LuaTensor {
         methods.add_meta_function(
             LuaMetaMethod::Add,
             |_, (lhs, rhs): (LuaUserDataRef<Self>, LuaUserDataRef<Self>)| {
-                Ok(LuaTensor(Tensor::add(&lhs.0, &rhs.0).map_err(wrap_err)?))
+                let lhs_t = &lhs.0;
+                let rhs_t = &rhs.0;
+                Ok(LuaTensor((lhs_t + rhs_t).map_err(wrap_err)?))
             },
         );
         methods.add_meta_function(
             LuaMetaMethod::Sub,
             |_, (lhs, rhs): (LuaUserDataRef<Self>, LuaUserDataRef<Self>)| {
-                Ok(LuaTensor(Tensor::sub(&lhs.0, &rhs.0).map_err(wrap_err)?))
+                let lhs_t = &lhs.0;
+                let rhs_t = &rhs.0;
+                Ok(LuaTensor((lhs_t - rhs_t).map_err(wrap_err)?))
             },
         );
         methods.add_meta_function(
             LuaMetaMethod::Mul,
             |_, (lhs, rhs): (LuaUserDataRef<Self>, LuaUserDataRef<Self>)| {
-                Ok(LuaTensor(Tensor::mul(&lhs.0, &rhs.0).map_err(wrap_err)?))
+                let lhs_t = &lhs.0;
+                let rhs_t = &rhs.0;
+                Ok(LuaTensor((lhs_t * rhs_t).map_err(wrap_err)?))
             },
         );
         methods.add_meta_function(
             LuaMetaMethod::Div,
             |_, (lhs, rhs): (LuaUserDataRef<Self>, LuaUserDataRef<Self>)| {
-                Ok(LuaTensor(Tensor::div(&lhs.0, &rhs.0).map_err(wrap_err)?))
+                let lhs_t = &lhs.0;
+                let rhs_t = &rhs.0;
+                Ok(LuaTensor((lhs_t / rhs_t).map_err(wrap_err)?))
             },
         );
+        methods.add_method("sum_all", |_, this, ()| {
+            let t = &this.0;
+            Ok(LuaTensor(t.sum_all().map_err(wrap_err)?))
+        });
     }
 }
 

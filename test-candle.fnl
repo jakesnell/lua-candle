@@ -19,5 +19,5 @@
 (print e)
 (print (+ d e))
 
-(local f (candle.randn [3 3]))
+(local f (: (candle.randn [200 3]) :sum_all))
 (print f)
