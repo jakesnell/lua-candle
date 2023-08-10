@@ -43,3 +43,12 @@
 
 (print (p:reshape [1 6]))
 (print (fennel.view (: (p:reshape [1 6]) :shape)))
+
+(print p)
+(print (+ p 1.))
+(print (+ p 1))
+(print (- p 1))
+(print (- p 1.))
+(print (* p 2))
+(print (* p 2. 3))
+(print (/ p 2 3.))

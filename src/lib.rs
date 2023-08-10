@@ -24,26 +24,50 @@ impl LuaUserData for LuaTensor {
         });
         methods.add_meta_function(
             LuaMetaMethod::Add,
-            |_, (lhs, rhs): (LuaUserDataRef<Self>, LuaUserDataRef<Self>)| {
-                Ok(LuaTensor(Tensor::add(&lhs, &rhs).map_err(wrap_err)?))
+            |_, (lhs, rhs): (LuaUserDataRef<Self>, LuaValue)| match rhs {
+                LuaValue::UserData(ud) => {
+                    let tensor = ud.borrow::<Self>()?;
+                    Ok(LuaTensor((&lhs.0 + &tensor.0).map_err(wrap_err)?))
+                }
+                LuaValue::Integer(n) => Ok(LuaTensor((&lhs.0 + (n as f64)).map_err(wrap_err)?)),
+                LuaValue::Number(n) => Ok(LuaTensor((&lhs.0 + n).map_err(wrap_err)?)),
+                _ => unreachable!(),
             },
         );
         methods.add_meta_function(
             LuaMetaMethod::Sub,
-            |_, (lhs, rhs): (LuaUserDataRef<Self>, LuaUserDataRef<Self>)| {
-                Ok(LuaTensor(Tensor::sub(&lhs, &rhs).map_err(wrap_err)?))
+            |_, (lhs, rhs): (LuaUserDataRef<Self>, LuaValue)| match rhs {
+                LuaValue::UserData(ud) => {
+                    let tensor = ud.borrow::<Self>()?;
+                    Ok(LuaTensor((&lhs.0 - &tensor.0).map_err(wrap_err)?))
+                }
+                LuaValue::Integer(n) => Ok(LuaTensor((&lhs.0 - (n as f64)).map_err(wrap_err)?)),
+                LuaValue::Number(n) => Ok(LuaTensor((&lhs.0 - n).map_err(wrap_err)?)),
+                _ => unreachable!(),
             },
         );
         methods.add_meta_function(
             LuaMetaMethod::Mul,
-            |_, (lhs, rhs): (LuaUserDataRef<Self>, LuaUserDataRef<Self>)| {
-                Ok(LuaTensor(Tensor::mul(&lhs, &rhs).map_err(wrap_err)?))
+            |_, (lhs, rhs): (LuaUserDataRef<Self>, LuaValue)| match rhs {
+                LuaValue::UserData(ud) => {
+                    let tensor = ud.borrow::<Self>()?;
+                    Ok(LuaTensor((&lhs.0 * &tensor.0).map_err(wrap_err)?))
+                }
+                LuaValue::Integer(n) => Ok(LuaTensor((&lhs.0 * (n as f64)).map_err(wrap_err)?)),
+                LuaValue::Number(n) => Ok(LuaTensor((&lhs.0 * n).map_err(wrap_err)?)),
+                _ => unreachable!(),
             },
         );
         methods.add_meta_function(
             LuaMetaMethod::Div,
-            |_, (lhs, rhs): (LuaUserDataRef<Self>, LuaUserDataRef<Self>)| {
-                Ok(LuaTensor(Tensor::div(&lhs, &rhs).map_err(wrap_err)?))
+            |_, (lhs, rhs): (LuaUserDataRef<Self>, LuaValue)| match rhs {
+                LuaValue::UserData(ud) => {
+                    let tensor = ud.borrow::<Self>()?;
+                    Ok(LuaTensor((&lhs.0 / &tensor.0).map_err(wrap_err)?))
+                }
+                LuaValue::Integer(n) => Ok(LuaTensor((&lhs.0 / (n as f64)).map_err(wrap_err)?)),
+                LuaValue::Number(n) => Ok(LuaTensor((&lhs.0 / n).map_err(wrap_err)?)),
+                _ => unreachable!(),
             },
         );
         methods.add_method("sum_all", |_, this, ()| {
@@ -88,13 +112,13 @@ impl<'lua> FromLua<'lua> for LuaDType {
                     .map_err(|_| LuaError::RuntimeError(format!("invalid dtype '{dtype_str}'")))?;
                 Ok(Self(dtype))
             }
-            LuaValue::Nil => Ok(Self(DType::F32)),
+            LuaValue::Nil => Ok(Self(DType::F64)),
             _ => unreachable!(),
         }
     }
 }
 
-fn new_tensor(_: &Lua, value: f32) -> LuaResult<LuaTensor> {
+fn new_tensor(_: &Lua, value: f64) -> LuaResult<LuaTensor> {
     let tensor = Tensor::new(value, &Device::Cpu).map_err(wrap_err)?;
     Ok(LuaTensor(tensor))
 }
@@ -110,12 +134,12 @@ fn zeros(_: &Lua, (shape, dtype): (Vec<usize>, LuaDType)) -> LuaResult<LuaTensor
 }
 
 fn rand(_: &Lua, shape: Vec<usize>) -> LuaResult<LuaTensor> {
-    let tensor = Tensor::rand(0f32, 1f32, shape, &Device::Cpu).map_err(wrap_err)?;
+    let tensor = Tensor::rand(0f64, 1f64, shape, &Device::Cpu).map_err(wrap_err)?;
     Ok(LuaTensor(tensor))
 }
 
 fn randn(_: &Lua, shape: Vec<usize>) -> LuaResult<LuaTensor> {
-    let tensor = Tensor::randn(0f32, 1f32, shape, &Device::Cpu).map_err(wrap_err)?;
+    let tensor = Tensor::randn(0f64, 1f64, shape, &Device::Cpu).map_err(wrap_err)?;
     Ok(LuaTensor(tensor))
 }
 
