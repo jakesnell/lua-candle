@@ -53,6 +53,11 @@ impl LuaUserData for LuaTensor {
         methods.add_method("to", |_, this, dtype: LuaDType| {
             let t = &this.0;
             Ok(LuaTensor(t.to_dtype(dtype.0).map_err(wrap_err)?))
+        });
+        methods.add_method("matmul", |_, this, other: LuaUserDataRef<Self>| {
+            let t = &this.0;
+            let u = &other.0;
+            Ok(LuaTensor(t.matmul(u).map_err(wrap_err)?))
         })
     }
 }

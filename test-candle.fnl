@@ -33,3 +33,9 @@
 
 (local f (candle.randn [3]))
 (print f)
+
+(local p (candle.randn [2 3]))
+(local q (candle.randn [3 4]))
+(print p)
+(print q)
+(print (p:matmul q))
