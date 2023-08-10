@@ -1,4 +1,4 @@
-use candle_core::{DType, Device, Error as CandleError, Tensor};
+use candle_core::{DType, Device, Error as CandleError, IndexOp, Tensor};
 use mlua::prelude::*;
 use mlua::FromLua;
 use std::str::FromStr;
@@ -7,6 +7,7 @@ pub fn wrap_err(err: CandleError) -> LuaError {
     LuaError::RuntimeError(format!("{err:?}"))
 }
 
+#[derive(Clone, Debug)]
 struct LuaTensor(Tensor);
 
 impl std::ops::Deref for LuaTensor {
@@ -68,6 +69,22 @@ impl LuaUserData for LuaTensor {
                 LuaValue::Integer(n) => Ok(LuaTensor((&lhs.0 / (n as f64)).map_err(wrap_err)?)),
                 LuaValue::Number(n) => Ok(LuaTensor((&lhs.0 / n).map_err(wrap_err)?)),
                 _ => unreachable!(),
+            },
+        );
+        methods.add_meta_function(
+            LuaMetaMethod::Index,
+            |lua, (lhs, rhs): (LuaUserDataRef<Self>, LuaValue)| {
+                if let Ok(index) = usize::from_lua(rhs.clone(), lua) {
+                    Ok(LuaTensor((lhs.0).i(index - 1).map_err(wrap_err)?))
+                } else if let Ok(indices) = <Vec<usize>>::from_lua(rhs.clone(), lua) {
+                    let mut x = lhs.0.clone();
+                    for index in indices {
+                        x = x.i(index - 1).map_err(wrap_err)?;
+                    }
+                    Ok(LuaTensor(x))
+                } else {
+                    unreachable!();
+                }
             },
         );
         methods.add_method("sum_all", |_, this, ()| {
@@ -146,7 +163,7 @@ fn randn(_: &Lua, shape: Vec<usize>) -> LuaResult<LuaTensor> {
 #[mlua::lua_module]
 fn candle(lua: &Lua) -> LuaResult<LuaTable> {
     let exports = lua.create_table()?;
-    exports.set("Tensor", lua.create_function(new_tensor)?)?;
+    exports.set("tensor", lua.create_function(new_tensor)?)?;
     exports.set("ones", lua.create_function(ones)?)?;
     exports.set("zeros", lua.create_function(zeros)?)?;
     exports.set("rand", lua.create_function(rand)?)?;
