@@ -39,3 +39,5 @@
 (print p)
 (print q)
 (print (p:matmul q))
+
+(print (p:reshape [1 6]))

@@ -55,6 +55,9 @@ impl LuaUserData for LuaTensor {
         });
         methods.add_method("matmul", |_, this, other: LuaUserDataRef<Self>| {
             Ok(LuaTensor(this.matmul(&other).map_err(wrap_err)?))
+        });
+        methods.add_method("reshape", |_, this, shape: Vec<usize>| {
+            Ok(LuaTensor(this.reshape(shape).map_err(wrap_err)?))
         })
     }
 }
