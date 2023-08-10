@@ -21,3 +21,9 @@
 
 (local f (: (candle.randn [200 3]) :sum_all))
 (print f)
+
+(local g (candle.ones [2 3] "f16"))
+(print g)
+
+(local h (candle.ones [2 1] "u8"))
+(print h)

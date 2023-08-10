@@ -1,5 +1,7 @@
 use candle_core::{DType, Device, Error as CandleError, Tensor};
 use mlua::prelude::*;
+use mlua::FromLua;
+use std::str::FromStr;
 
 pub fn wrap_err(err: CandleError) -> LuaError {
     LuaError::RuntimeError(format!("{err:?}"))
@@ -51,18 +53,48 @@ impl LuaUserData for LuaTensor {
     }
 }
 
+#[derive(Copy, Clone)]
+struct LuaDType(DType);
+
+impl LuaUserData for LuaDType {
+    fn add_methods<'lua, M: LuaUserDataMethods<'lua, Self>>(methods: &mut M) {
+        methods.add_meta_method(LuaMetaMethod::ToString, |_, this, ()| {
+            Ok(format!("{:?}", this.0))
+        });
+        methods.add_meta_method(LuaMetaMethod::ToString, |_, this, ()| {
+            Ok(format!("{:?}", this.0))
+        });
+    }
+}
+
+impl<'lua> FromLua<'lua> for LuaDType {
+    fn from_lua(value: LuaValue<'lua>, _: &'lua Lua) -> LuaResult<Self> {
+        match value {
+            LuaValue::UserData(ud) => Ok(*ud.borrow::<Self>()?),
+            LuaValue::String(dtype) => {
+                let dtype = dtype.to_str()?;
+                let dtype = DType::from_str(dtype)
+                    .map_err(|_| LuaError::RuntimeError(format!("invalid dtype '{dtype}'")))?;
+                Ok(Self(dtype))
+            }
+            LuaValue::Nil => Ok(Self(DType::F32)),
+            _ => unreachable!(),
+        }
+    }
+}
+
 fn tensor(_: &Lua, value: f32) -> LuaResult<LuaTensor> {
     let tensor = Tensor::new(value, &Device::Cpu).map_err(wrap_err)?;
     Ok(LuaTensor(tensor))
 }
 
-fn ones(_: &Lua, shape: Vec<usize>) -> LuaResult<LuaTensor> {
-    let tensor = Tensor::ones(shape, DType::F32, &Device::Cpu).map_err(wrap_err)?;
+fn ones(_: &Lua, (shape, dtype): (Vec<usize>, LuaDType)) -> LuaResult<LuaTensor> {
+    let tensor = Tensor::ones(shape, dtype.0, &Device::Cpu).map_err(wrap_err)?;
     Ok(LuaTensor(tensor))
 }
 
-fn zeros(_: &Lua, shape: Vec<usize>) -> LuaResult<LuaTensor> {
-    let tensor = Tensor::zeros(shape, DType::F32, &Device::Cpu).map_err(wrap_err)?;
+fn zeros(_: &Lua, (shape, dtype): (Vec<usize>, LuaDType)) -> LuaResult<LuaTensor> {
+    let tensor = Tensor::zeros(shape, dtype.0, &Device::Cpu).map_err(wrap_err)?;
     Ok(LuaTensor(tensor))
 }
 
@@ -84,6 +116,12 @@ fn candle(lua: &Lua) -> LuaResult<LuaTable> {
     exports.set("zeros", lua.create_function(zeros)?)?;
     exports.set("rand", lua.create_function(rand)?)?;
     exports.set("randn", lua.create_function(randn)?)?;
+    exports.set("u8", LuaDType(DType::U8))?;
+    exports.set("u32", LuaDType(DType::U32))?;
+    exports.set("bf16", LuaDType(DType::BF16))?;
+    exports.set("f16", LuaDType(DType::F16))?;
+    exports.set("f32", LuaDType(DType::F32))?;
+    exports.set("f64", LuaDType(DType::F64))?;
 
     Ok(exports)
 }
