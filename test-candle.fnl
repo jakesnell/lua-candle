@@ -1,4 +1,5 @@
-(local candle (require "candle"))
+(local fennel (require :fennel))
+(local candle (require :candle))
 
 ;; (print (candle.ones [1 2]))
 ;; (print (candle.ones [1]))
@@ -41,3 +42,4 @@
 (print (p:matmul q))
 
 (print (p:reshape [1 6]))
+(print (fennel.view (: (p:reshape [1 6]) :shape)))

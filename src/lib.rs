@@ -47,8 +47,7 @@ impl LuaUserData for LuaTensor {
             },
         );
         methods.add_method("sum_all", |_, this, ()| {
-            let t = &this.0;
-            Ok(LuaTensor(t.sum_all().map_err(wrap_err)?))
+            Ok(LuaTensor(this.sum_all().map_err(wrap_err)?))
         });
         methods.add_method("to", |_, this, dtype: LuaDType| {
             Ok(LuaTensor(this.to_dtype(dtype.0).map_err(wrap_err)?))
@@ -58,6 +57,9 @@ impl LuaUserData for LuaTensor {
         });
         methods.add_method("reshape", |_, this, shape: Vec<usize>| {
             Ok(LuaTensor(this.reshape(shape).map_err(wrap_err)?))
+        });
+        methods.add_method("shape", |_, this, ()| -> LuaResult<Vec<usize>> {
+            Ok(this.dims().to_vec())
         })
     }
 }
