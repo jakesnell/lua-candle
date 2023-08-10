@@ -50,6 +50,10 @@ impl LuaUserData for LuaTensor {
             let t = &this.0;
             Ok(LuaTensor(t.sum_all().map_err(wrap_err)?))
         });
+        methods.add_method("to", |_, this, dtype: LuaDType| {
+            let t = &this.0;
+            Ok(LuaTensor(t.to_dtype(dtype.0).map_err(wrap_err)?))
+        })
     }
 }
 
@@ -83,7 +87,7 @@ impl<'lua> FromLua<'lua> for LuaDType {
     }
 }
 
-fn tensor(_: &Lua, value: f32) -> LuaResult<LuaTensor> {
+fn new_tensor(_: &Lua, value: f32) -> LuaResult<LuaTensor> {
     let tensor = Tensor::new(value, &Device::Cpu).map_err(wrap_err)?;
     Ok(LuaTensor(tensor))
 }
@@ -111,7 +115,7 @@ fn randn(_: &Lua, shape: Vec<usize>) -> LuaResult<LuaTensor> {
 #[mlua::lua_module]
 fn candle(lua: &Lua) -> LuaResult<LuaTable> {
     let exports = lua.create_table()?;
-    exports.set("tensor", lua.create_function(tensor)?)?;
+    exports.set("Tensor", lua.create_function(new_tensor)?)?;
     exports.set("ones", lua.create_function(ones)?)?;
     exports.set("zeros", lua.create_function(zeros)?)?;
     exports.set("rand", lua.create_function(rand)?)?;

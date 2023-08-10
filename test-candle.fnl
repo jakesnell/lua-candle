@@ -4,13 +4,13 @@
 ;; (print (candle.ones [1]))
 ;; (print (candle.zeros [3 2 1]))
 
-(local a (candle.tensor 9))
-(local b (candle.tensor 3))
+(local a (candle.Tensor 9))
+(local b (candle.Tensor 3))
 (print (+ a b))
 (print (- a b))
 (print (* a b))
 
-(local c (candle.tensor 0))
+(local c (candle.Tensor 0))
 (print (/ a c))
 
 (local d (candle.rand [3 5]))
@@ -19,11 +19,14 @@
 (print e)
 (print (+ d e))
 
-(local f (: (candle.randn [200 3]) :sum_all))
-(print f)
+;; (local f (: (candle.randn [200 3] :f64) :sum_all))
+;; (print (/ f (candle.tensor 600.)))
 
-(local g (candle.ones [2 3] "f16"))
-(print g)
+;; (local g (candle.ones [2 3] "f16"))
+;; (print g)
 
 (local h (candle.ones [2 1] "u8"))
 (print h)
+(print (h:to :f16))
+(print (h:to candle.f64))
+(print (h:to :bf16))
