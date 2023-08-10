@@ -103,12 +103,12 @@ fn zeros(_: &Lua, (shape, dtype): (Vec<usize>, LuaDType)) -> LuaResult<LuaTensor
 }
 
 fn rand(_: &Lua, shape: Vec<usize>) -> LuaResult<LuaTensor> {
-    let tensor = Tensor::rand(0., 1., shape, &Device::Cpu).map_err(wrap_err)?;
+    let tensor = Tensor::rand(0f32, 1f32, shape, &Device::Cpu).map_err(wrap_err)?;
     Ok(LuaTensor(tensor))
 }
 
 fn randn(_: &Lua, shape: Vec<usize>) -> LuaResult<LuaTensor> {
-    let tensor = Tensor::randn(0., 1., shape, &Device::Cpu).map_err(wrap_err)?;
+    let tensor = Tensor::randn(0f32, 1f32, shape, &Device::Cpu).map_err(wrap_err)?;
     Ok(LuaTensor(tensor))
 }
 

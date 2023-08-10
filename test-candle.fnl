@@ -30,3 +30,6 @@
 (print (h:to :f16))
 (print (h:to candle.f64))
 (print (h:to :bf16))
+
+(local f (candle.randn [3]))
+(print f)
