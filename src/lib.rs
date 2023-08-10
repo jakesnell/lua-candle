@@ -51,13 +51,10 @@ impl LuaUserData for LuaTensor {
             Ok(LuaTensor(t.sum_all().map_err(wrap_err)?))
         });
         methods.add_method("to", |_, this, dtype: LuaDType| {
-            let t = &this.0;
-            Ok(LuaTensor(t.to_dtype(dtype.0).map_err(wrap_err)?))
+            Ok(LuaTensor(this.to_dtype(dtype.0).map_err(wrap_err)?))
         });
         methods.add_method("matmul", |_, this, other: LuaUserDataRef<Self>| {
-            let t = &this.0;
-            let u = &other.0;
-            Ok(LuaTensor(t.matmul(u).map_err(wrap_err)?))
+            Ok(LuaTensor(this.matmul(&other).map_err(wrap_err)?))
         })
     }
 }
@@ -80,10 +77,10 @@ impl<'lua> FromLua<'lua> for LuaDType {
     fn from_lua(value: LuaValue<'lua>, _: &'lua Lua) -> LuaResult<Self> {
         match value {
             LuaValue::UserData(ud) => Ok(*ud.borrow::<Self>()?),
-            LuaValue::String(dtype) => {
-                let dtype = dtype.to_str()?;
-                let dtype = DType::from_str(dtype)
-                    .map_err(|_| LuaError::RuntimeError(format!("invalid dtype '{dtype}'")))?;
+            LuaValue::String(dtype_luastr) => {
+                let dtype_str = dtype_luastr.to_str()?;
+                let dtype = DType::from_str(dtype_str)
+                    .map_err(|_| LuaError::RuntimeError(format!("invalid dtype '{dtype_str}'")))?;
                 Ok(Self(dtype))
             }
             LuaValue::Nil => Ok(Self(DType::F32)),
