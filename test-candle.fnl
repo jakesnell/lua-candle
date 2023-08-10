@@ -4,13 +4,13 @@
 ;; (print (candle.ones [1]))
 ;; (print (candle.zeros [3 2 1]))
 
-(local a (candle.Tensor 9))
-(local b (candle.Tensor 3))
+(local a (candle.tensor 9))
+(local b (candle.tensor 3))
 (print (+ a b))
 (print (- a b))
 (print (* a b))
 
-(local c (candle.Tensor 0))
+(local c (candle.tensor 0))
 (print (/ a c))
 
 (local d (candle.rand [3 5]))
