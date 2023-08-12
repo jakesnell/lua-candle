@@ -57,3 +57,9 @@
 (print q)
 (print (. q 2 3))
 (print (. q [2 3]))
+
+(local s (candle.rand [2 3]))
+(local t (candle.rand [1 3]))
+(print s)
+(print t)
+(print (s:broadcast_add t))
