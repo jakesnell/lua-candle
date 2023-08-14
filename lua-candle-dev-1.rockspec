@@ -17,7 +17,14 @@ dependencies = {
 
 build = {
    type = "rust-mlua",
+
+   install = {
+      lua = {
+         candle = "lua/candle.lua"
+      }
+   },
+
    modules = {
-      "candle"
+      "candle_core"
    }
 }

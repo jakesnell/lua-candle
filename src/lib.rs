@@ -26,6 +26,9 @@ impl LuaUserData for LuaTensor {
         methods.add_method("rank", |_, this, ()| -> LuaResult<usize> {
             Ok(this.rank())
         });
+        methods.add_method("dtype", |_, this, ()| -> LuaResult<LuaDType> {
+            Ok(LuaDType(this.dtype()))
+        });
         methods.add_meta_method(LuaMetaMethod::ToString, |_, this, ()| {
             Ok(format!("{}", this.0))
         });
@@ -198,9 +201,13 @@ fn randn(_: &Lua, shape: Vec<usize>) -> LuaResult<LuaTensor> {
 }
 
 #[mlua::lua_module]
-fn candle(lua: &Lua) -> LuaResult<LuaTable> {
+fn candle_core(lua: &Lua) -> LuaResult<LuaTable> {
     let exports = lua.create_table()?;
-    exports.set("Tensor", lua.create_function(new_tensor)?)?;
+    exports.set("new_tensor", lua.create_function(new_tensor)?)?;
+    exports.set(
+        "new_tensor_from_integer",
+        lua.create_function(new_tensor_from_integer)?,
+    )?;
     exports.set("ones", lua.create_function(ones)?)?;
     exports.set("zeros", lua.create_function(zeros)?)?;
     exports.set("rand", lua.create_function(rand)?)?;
